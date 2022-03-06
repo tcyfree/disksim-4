@@ -3,6 +3,7 @@
 ## 运行环境
 Disksim 是基于`32位`的 linux 系统开发的，所以最好先确保你的系统是32位的。
 推荐使用Docker部署：
+
 ```
 $ docker pull tcyfree/ubuntu14-i386-disksim-4.0-with-ssdmodel:v1
 $ docker run -itd --name=disksim-with-ssdmodel tcyfree/ubuntu14-i386-disksim-4.0-with-ssdmodel:v1
