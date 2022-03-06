@@ -6,7 +6,9 @@ Disksim 是基于`32位`的 linux 系统开发的，所以最好先确保你的�
 
 ```
 $ docker pull tcyfree/ubuntu14-i386-disksim-4.0-with-ssdmodel:v1
+
 $ docker run -itd --name=disksim-with-ssdmodel tcyfree/ubuntu14-i386-disksim-4.0-with-ssdmodel:v1
+
 $ docker exec -it disksim-with-ssdmodel bash  
 ```
 
