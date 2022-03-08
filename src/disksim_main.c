@@ -74,6 +74,7 @@ int main (int argc, char **argv)
   else {
     disksim = calloc(1, sizeof(struct disksim));
     disksim_initialize_disksim_structure(disksim);
+    //对 disksim 做一些初始化操作。大致功能如下：设置对齐方式(大端对齐还是小端对齐)，设置输出文件，设置 trace 的格式，设置输入的 trace 数据的文件，判断是否启用 synthgen，设置重写的参数，根据配置文件设置参数，iosim_info 的初始化，最后就是为开始模拟磁盘做准备。
     disksim_setup_disksim (argc, argv);
   }
   disksim_run_simulation ();

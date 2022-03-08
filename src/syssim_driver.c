@@ -148,6 +148,7 @@ main(int argc, char *argv[])
   if (stat(argv[1], &buf) < 0)
     panic(argv[1]);
 
+  //调用函数 disksim_interface_initialize() 实例化一个接口
   disksim = disksim_interface_initialize(argv[1], 
 					 argv[2],
 					 syssim_report_completion,
@@ -161,21 +162,21 @@ main(int argc, char *argv[])
   DISKSIM_srand48(1);
 
   for (i=0; i < 1000; i++) {
-    r.start = now;
+    r.start = now;   // 一个事件的开始时间，是上一个事件的结束时间
     r.flags = DISKSIM_READ;
     r.devno = 0;
 
     /* NOTE: it is bad to use this internal disksim call from external... */
-    r.blkno = BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
+    r.blkno = BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));  // 随机生成 blkno
     r.bytecount = BLOCK;
     completed = 0;
-    disksim_interface_request_arrive(disksim, now, &r);
+    disksim_interface_request_arrive(disksim, now, &r); //发送请求
 
     /* Process events until this I/O is completed */
-    while(next_event >= 0) {
+    while(next_event >= 0) { // 当前请求全部完成了才会发送下一个请求
       now = next_event;
       next_event = -1;
-      disksim_interface_internal_event(disksim, now, 0);
+      disksim_interface_internal_event(disksim, now, 0); //处理未完成的事件
     }
 
     if (!completed) {
