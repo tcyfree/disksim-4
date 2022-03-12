@@ -130,65 +130,130 @@ syssim_report_completion(SysTime t, struct disksim_request *r, void *ctx)
 }
 
 
-int
-main(int argc, char *argv[])
+// int
+// main(int argc, char *argv[])
+// {
+//   int i;
+//   int nsectors;
+//   struct stat buf;
+//   struct disksim_request r;
+//   struct disksim_interface *disksim;
+
+//   if (argc != 4 || (nsectors = atoi(argv[3])) <= 0) {
+//     fprintf(stderr, "usage: %s <param file> <output file> <#sectors>\n",
+// 	    argv[0]);
+//     exit(1);
+//   }
+
+//   if (stat(argv[1], &buf) < 0)
+//     panic(argv[1]);
+
+//   disksim = disksim_interface_initialize(argv[1], 
+// 					 argv[2],
+// 					 syssim_report_completion,
+// 					 syssim_schedule_callback,
+// 					 syssim_deschedule_callback,
+// 					 0,
+// 					 0,
+// 					 0);
+
+//   /* NOTE: it is bad to use this internal disksim call from external... */
+//   DISKSIM_srand48(1);
+
+//   for (i=0; i < 1000; i++) {
+//     r.start = now;
+//     r.flags = DISKSIM_READ;
+//     r.devno = 0;
+
+//     /* NOTE: it is bad to use this internal disksim call from external... */
+//     r.blkno = BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
+//     r.bytecount = BLOCK;
+//     completed = 0;
+//     disksim_interface_request_arrive(disksim, now, &r);
+
+//     /* Process events until this I/O is completed */
+//     while(next_event >= 0) {
+//       now = next_event;
+//       next_event = -1;
+//       disksim_interface_internal_event(disksim, now, 0);
+//     }
+
+//     if (!completed) {
+//       fprintf(stderr,
+// 	      "%s: internal error. Last event not completed %d\n",
+// 	      argv[0], i);
+//       exit(1);
+//     }
+//   }
+
+//   disksim_interface_shutdown(disksim, now);
+
+//   print_statistics(&st, "response time");
+
+//   exit(0);
+// }
+
+/**
+ * @brief 改进后程序的调用方式：syssim <parameters file> <output file> <trace file>
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
+int main(int argc, char *argv[])
 {
-  int i;
-  int nsectors;
-  struct stat buf;
-  struct disksim_request r;
-  struct disksim_interface *disksim;
+    int i;
+    int nsectors;
+    struct stat buf;
+    struct disksim_interface *disksim;
 
-  if (argc != 4 || (nsectors = atoi(argv[3])) <= 0) {
-    fprintf(stderr, "usage: %s <param file> <output file> <#sectors>\n",
-	    argv[0]);
-    exit(1);
-  }
-
-  if (stat(argv[1], &buf) < 0)
-    panic(argv[1]);
-
-  disksim = disksim_interface_initialize(argv[1], 
-					 argv[2],
-					 syssim_report_completion,
-					 syssim_schedule_callback,
-					 syssim_deschedule_callback,
-					 0,
-					 0,
-					 0);
-
-  /* NOTE: it is bad to use this internal disksim call from external... */
-  DISKSIM_srand48(1);
-
-  for (i=0; i < 1000; i++) {
-    r.start = now;
-    r.flags = DISKSIM_READ;
-    r.devno = 0;
-
-    /* NOTE: it is bad to use this internal disksim call from external... */
-    r.blkno = BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
-    r.bytecount = BLOCK;
-    completed = 0;
-    disksim_interface_request_arrive(disksim, now, &r);
-
-    /* Process events until this I/O is completed */
-    while(next_event >= 0) {
-      now = next_event;
-      next_event = -1;
-      disksim_interface_internal_event(disksim, now, 0);
+    if (argc != 4 ) {
+        fprintf(stderr, "usage: %s <param file> <output file> <tracefile>\n",argv[0]);
+        exit(1);
     }
 
-    if (!completed) {
-      fprintf(stderr,
-	      "%s: internal error. Last event not completed %d\n",
-	      argv[0], i);
-      exit(1);
+    if (stat(argv[1], &buf) < 0)
+        panic(argv[1]);
+
+    disksim = disksim_interface_initialize(argv[1], argv[2],
+            syssim_report_completion,
+            syssim_schedule_callback,
+            syssim_deschedule_callback,0,0,0);
+
+    FILE *tracefile = fopen(argv[3], "r");
+    double time;
+    int devno;
+    unsigned long logical_block_number;
+    int size;
+    int isread;
+    double senttime=0.0;
+    char line[201];
+    fgets(line,200,tracefile);
+    while(!feof(tracefile)) {   //开始发请求
+        if(sscanf(line, "%lf %d %ld %d %d", &time, &devno, &logical_block_number,&size, &isread)!=5){
+            fprintf(stderr, "Wrong number of arguments for I/O trace event type\n");
+            fprintf(stderr, "line: %s", line);
+         }
+        struct disksim_request *r = malloc(sizeof(struct disksim_request));  // 这里需要特别注意，每个request都需要不同的内存
+        r->start = time;
+        r->flags = isread;
+        r->devno = devno;
+        r->blkno = logical_block_number;
+        r->bytecount = size * 512;  // 必须是一个块(512B)的整数倍
+        disksim_interface_request_arrive(disksim, time, r);
+        fgets(line,200,tracefile);
     }
-  }
+    fclose(tracefile);
+    while(next_event >= 0) {    //处理剩下的事件
+        now = next_event;
+        next_event = -1;
+        disksim_interface_internal_event(disksim, now, 0);
+    }
 
-  disksim_interface_shutdown(disksim, now);
+    disksim_interface_shutdown(disksim, now);
 
-  print_statistics(&st, "response time");
+    print_statistics(&st, "response time");
 
-  exit(0);
+    exit(0);
 }
+
