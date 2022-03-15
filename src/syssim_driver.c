@@ -134,7 +134,7 @@ int
 main(int argc, char *argv[])
 {
   int i;
-  int nsectors = 2676846, times, blkno=1;
+  int nsectors = 2676846, times, blkno = 1, is_random;
   struct disksim_request r;
   struct disksim_interface *disksim;
 
@@ -143,6 +143,8 @@ main(int argc, char *argv[])
 	    argv[0]);
     exit(1);
   }
+  //是否是随机的,==1是随机，否则顺序
+  is_random = atoi(argv[2]);
 
   disksim = disksim_interface_initialize("cheetah4LP.parv", 
 					 "syssim.outv",
@@ -160,10 +162,9 @@ main(int argc, char *argv[])
     r.start = now;
     r.flags = DISKSIM_READ;
     r.devno = 0;
+    
+    r.blkno = is_random == 1 ? BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR)) : blkno;
 
-    /* NOTE: it is bad to use this internal disksim call from external... */
-    // r.blkno = BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
-    r.blkno = blkno;
     r.bytecount = BLOCK;
     completed = 0;
     disksim_interface_request_arrive(disksim, now, &r);
@@ -181,7 +182,10 @@ main(int argc, char *argv[])
 	      argv[0], i);
       exit(1);
     }
-    blkno++;
+    if (is_random != 1)
+    {
+      blkno++;
+    }
   }
 
   disksim_interface_shutdown(disksim, now);
