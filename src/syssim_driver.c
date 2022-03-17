@@ -143,18 +143,20 @@ syssim_report_completion(SysTime t, struct disksim_request *r, void *ctx)
 int
 main(int argc, char *argv[])
 {
-  int i;
+  int i, is_read;
   int nsectors = 2676846, times, blkno = 1, is_sequential;
   struct disksim_request r;
   struct disksim_interface *disksim;
 
-  if (argc != 3 || (times = atoi(argv[1])) <= 0) {
+  if (argc != 4 || (times = atoi(argv[1])) <= 0) {
     fprintf(stderr, "usage: %s <tiems> <#is_sequential>\n",
 	    argv[0]);
     exit(1);
   }
+  //是否是读,==1是顺序,否则随机
+  is_read = atoi(argv[2]);
   //是否是随机的,==1是顺序,否则随机
-  is_sequential = atoi(argv[2]);
+  is_sequential = atoi(argv[3]);
 
   disksim = disksim_interface_initialize("cheetah4LP.parv", 
 					 "syssim.outv",
@@ -170,7 +172,7 @@ main(int argc, char *argv[])
 
   for (i=0; i < times; i++) {
     r.start = now;
-    r.flags = DISKSIM_READ;
+    r.flags = is_read == 1 ? DISKSIM_READ : DISKSIM_WRITE;
     r.devno = 0;
     
     r.blkno = is_sequential == 1 ? blkno : BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
