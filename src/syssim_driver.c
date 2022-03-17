@@ -96,6 +96,15 @@ print_statistics(Stat *s, const char *title)
   printf("%s: n=%d average=%f std. deviation=%f\n", title, s->n, avg, std);
 }
 
+void
+avg_statistics(Stat *s, const char *title)
+{
+  double avg, std;
+
+  avg = s->sum/s->n;
+  std = sqrt((s->sqr - 2*avg*s->sum + s->n*avg*avg) / s->n);
+  printf("%f\n", avg);
+}
 
 /*
  * Schedule next callback at time t.
@@ -190,7 +199,7 @@ main(int argc, char *argv[])
 
   disksim_interface_shutdown(disksim, now);
 
-  print_statistics(&st, "response time");
+  avg_statistics(&st, "response time");
 
   exit(0);
 }
