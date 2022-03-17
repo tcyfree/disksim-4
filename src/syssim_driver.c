@@ -143,17 +143,17 @@ int
 main(int argc, char *argv[])
 {
   int i;
-  int nsectors = 2676846, times, blkno = 1, is_random;
+  int nsectors = 2676846, times, blkno = 1, is_sequential;
   struct disksim_request r;
   struct disksim_interface *disksim;
 
   if (argc != 3 || (times = atoi(argv[1])) <= 0) {
-    fprintf(stderr, "usage: %s <tiems> <#is_random>\n",
+    fprintf(stderr, "usage: %s <tiems> <#is_sequential>\n",
 	    argv[0]);
     exit(1);
   }
-  //是否是随机的,==1是随机，否则顺序
-  is_random = atoi(argv[2]);
+  //是否是随机的,==1是顺序,否则随机
+  is_sequential = atoi(argv[2]);
 
   disksim = disksim_interface_initialize("cheetah4LP.parv", 
 					 "syssim.outv",
@@ -172,7 +172,7 @@ main(int argc, char *argv[])
     r.flags = DISKSIM_READ;
     r.devno = 0;
     
-    r.blkno = is_random == 1 ? BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR)) : blkno;
+    r.blkno = is_sequential == 1 ? blkno : BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
 
     r.bytecount = BLOCK;
     completed = 0;
@@ -191,7 +191,7 @@ main(int argc, char *argv[])
 	      argv[0], i);
       exit(1);
     }
-    if (is_random != 1)
+    if (is_sequential == 1)
     {
       blkno++;
     }
