@@ -175,14 +175,16 @@ main(int argc, char *argv[])
 
   /* NOTE: it is bad to use this internal disksim call from external... */
   DISKSIM_srand48(1);
-
+  //先给blkno随机找一个number，再看是否继续随机
+  blkno = BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
   for (i=0; i < times; i++) {
     r.start = now;
     r.flags = is_read == 1 ? DISKSIM_READ : DISKSIM_WRITE;
+    // printf("flags: %d\n", r.flags);
     r.devno = 0;
     
     r.blkno = is_sequential == 1 ? blkno : BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
-
+    // printf("blkno: %d\n", r.blkno);
     r.bytecount = BLOCK;
     completed = 0;
     disksim_interface_request_arrive(disksim, now, &r);
@@ -209,6 +211,7 @@ main(int argc, char *argv[])
   disksim_interface_shutdown(disksim, now);
 
   avg_statistics(&st, "response time");
+  print_statistics(&st, "response time");
 
   exit(0);
 }
