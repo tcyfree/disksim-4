@@ -139,7 +139,13 @@ syssim_report_completion(SysTime t, struct disksim_request *r, void *ctx)
   add_statistics(&st, t - r->start);
 }
 
-
+/**
+ * @brief 执行次数、读写、随机/顺序
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
 int
 main(int argc, char *argv[])
 {
@@ -153,7 +159,7 @@ main(int argc, char *argv[])
 	    argv[0]);
     exit(1);
   }
-  //是否是读,==1是顺序,否则随机
+  //是否是读,==1是读,否则写
   is_read = atoi(argv[2]);
   //是否是随机的,==1是顺序,否则随机
   is_sequential = atoi(argv[3]);
