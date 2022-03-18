@@ -164,7 +164,7 @@ main(int argc, char *argv[])
   //是否是随机的,==1是顺序,否则随机
   is_sequential = atoi(argv[3]);
 
-  disksim = disksim_interface_initialize("cheetah4LP.parv", 
+  disksim = disksim_interface_initialize("st41601n.parv", 
 					 "syssim.outv",
 					 syssim_report_completion,
 					 syssim_schedule_callback,
