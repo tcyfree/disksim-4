@@ -185,7 +185,7 @@ main(int argc, char *argv[])
     
     r.blkno = is_sequential == 1 ? blkno : BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
     // printf("blkno: %d\n", r.blkno);
-    r.bytecount = BLOCK;
+    r.bytecount = BLOCK*2;
     completed = 0;
     disksim_interface_request_arrive(disksim, now, &r);
 
@@ -204,7 +204,7 @@ main(int argc, char *argv[])
     }
     if (is_sequential == 1)
     {
-      blkno++;
+      blkno += 16;
     }
   }
 
