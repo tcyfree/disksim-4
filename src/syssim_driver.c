@@ -180,8 +180,13 @@ main(int argc, char *argv[])
     r.flags = is_read == 1 ? DISKSIM_READ : DISKSIM_WRITE;
     // printf("flags: %d\n", r.flags);
     r.devno = 0;
-    
-    r.blkno = is_sequential == 1 ? blkno += 16 : BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
+    if (i == 0)
+    {
+      blkno = BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
+      r.blkno = blkno;
+    } else {
+      r.blkno = is_sequential == 1 ? blkno += 2 : BLOCK2SECTOR*(DISKSIM_lrand48()%(nsectors/BLOCK2SECTOR));
+    }
     // printf("blkno: %d\n", r.blkno);
     r.bytecount = BLOCK*2;
     completed = 0;
@@ -205,7 +210,7 @@ main(int argc, char *argv[])
   disksim_interface_shutdown(disksim, now);
 
   avg_statistics(&st, "response time");
-  print_statistics(&st, "response time");
+  // print_statistics(&st, "response time");
 
   exit(0);
 }
