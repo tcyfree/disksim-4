@@ -154,7 +154,7 @@ main(int argc, char *argv[])
   struct disksim_request r;
   struct disksim_interface *disksim;
 
-  if (argc != 4 || (times = atoi(argv[1])) <= 0) {
+  if (argc != 5 || (times = atoi(argv[1])) <= 0) {
     fprintf(stderr, "usage: %s <tiems> <#is_sequential>\n",
 	    argv[0]);
     exit(1);
@@ -164,7 +164,7 @@ main(int argc, char *argv[])
   //是否是随机的,==1是顺序,否则随机
   is_sequential = atoi(argv[3]);
 
-  disksim = disksim_interface_initialize("hplajw.parv", 
+  disksim = disksim_interface_initialize(argv[4], 
 					 "syssim.outv",
 					 syssim_report_completion,
 					 syssim_schedule_callback,
