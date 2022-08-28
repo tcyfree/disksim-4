@@ -154,7 +154,7 @@ syssim_report_completion(SysTime t, struct disksim_request *r, void *ctx)
 }
 
 /**
- * @brief 执行次数、读写、随机/顺序
+ * @brief 执行次数、读写、随机/顺序、配置文件
  * 
  * @param argc 
  * @param argv 
@@ -224,7 +224,7 @@ main(int argc, char *argv[])
   disksim_interface_shutdown(disksim, now);
 
   avg_statistics(&st, "response time");
-  // print_statistics(&st, "response time");
+  print_statistics(&st, "response time");
 
   exit(0);
 }
