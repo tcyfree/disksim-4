@@ -1,2 +1,2 @@
 #!/bin/sh
-cd ../src/ && make clean && make && cd ../valid/
+cd ../ && make clean && make && cd ../valid/
