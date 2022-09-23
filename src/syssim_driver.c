@@ -81,7 +81,7 @@ void
 add_statistics(Stat *s, double x)
 {
   s->n++;
-  printf("s->sum=%f x=%f\n", s->sum, x);
+  // printf("s->sum=%f x=%f\n", s->sum, x);
   s->sum += x;
   s->sqr += x*x;
 }
@@ -94,18 +94,14 @@ print_statistics(Stat *s, const char *title)
 
   avg = s->sum/s->n;
   std = sqrt((s->sqr - 2*avg*s->sum + s->n*avg*avg) / s->n);
-  printf("sum=%f n=%d\n", s->sum, s->n);
+  // printf("sum=%f n=%d\n", s->sum, s->n);
   printf("%s: n=%d average=%f std. deviation=%f\n", title, s->n, avg, std);
 }
 
 void
-avg_statistics_pro(Stat *s, const char *title, int seq)
+avg_statistics_pro(Stat *s, const char *title)
 {
   double avg, std;
-  // if (seq == 0)
-  // {
-  //   s->sum += s->n*5;
-  // }
   avg = s->sum/s->n;
   std = sqrt((s->sqr - 2*avg*s->sum + s->n*avg*avg) / s->n);
   //改成纳秒，和ssdsim同步
@@ -162,8 +158,8 @@ int main(int argc, char *argv[])
 	struct stat buf;
 	struct disksim_interface *disksim;
 
-	if (argc != 3 ) {
-		fprintf(stderr, "usage: %s <param file> <tracefile>\n",argv[0]);
+	if (argc != 6 ) {
+		fprintf(stderr, "usage: %s param_file tracefile time lpn size isread\n",argv[0]);
 		exit(1);
 	}
 
@@ -175,33 +171,26 @@ int main(int argc, char *argv[])
 			syssim_schedule_callback,
 			syssim_deschedule_callback,0,0,0);
 
-	FILE *tracefile = fopen(argv[2], "r");
 	double time;
-	int devno;
+	int devno = 0;
 	unsigned long logical_block_number;
 	int size;
 	int isread;
-	double senttime=0.0;
-	char line[201];
-	fgets(line,200,tracefile);
-	while(!feof(tracefile)) {   //开始发请求
-		if(sscanf(line, "%lf %d %ld %d %d", &time, &devno, &logical_block_number,&size, &isread)!=5){
-			fprintf(stderr, "Wrong number of arguments for I/O trace event type\n");
-			fprintf(stderr, "line: %s", line);
-		 }
-    // printf("%lf %d %ld %d %d\n", time, devno, logical_block_number,size, isread);
-    time = time / 1000000000; // 将ns改成s
-		struct disksim_request *r = malloc(sizeof(struct disksim_request));  // 这里需要特别注意，每个request都需要不同的内存
-		r->start = time;
-		r->flags = isread;
-		r->devno = devno;
-		r->blkno = logical_block_number;
-		r->bytecount = size * 512 * 16;  // 必须是一个块(512B)的整数倍
-		disksim_interface_request_arrive(disksim, time, r);
-		fgets(line,200,tracefile);
-	}
-	fclose(tracefile);
-	while(next_event >= 0) {    //处理剩下的事件
+  // printf("%lf %d %ld %d %d\n", time, devno, logical_block_number,size, isread);
+  sscanf(argv[2], "%lf", &time);
+  sscanf(argv[3], "%d", &logical_block_number);
+  sscanf(argv[4], "%d", &size);
+  sscanf(argv[5], "%d", &isread);
+  time = time / 1000000000;                                           // 将ns改成s
+  struct disksim_request *r = malloc(sizeof(struct disksim_request)); // 这里需要特别注意，每个request都需要不同的内存
+  r->start = time;
+  r->flags = isread;
+  r->devno = devno;
+  r->blkno = logical_block_number;
+  r->bytecount = size * 512 * 16; // 必须是一个块(512B)的整数倍
+  disksim_interface_request_arrive(disksim, time, r);
+
+  while(next_event >= 0) {    //处理剩下的事件
 		now = next_event;
 		next_event = -1;
 		disksim_interface_internal_event(disksim, now, 0);
@@ -209,6 +198,7 @@ int main(int argc, char *argv[])
 
 	disksim_interface_shutdown(disksim, now);
 
+	avg_statistics_pro(&st, "response time");
 	print_statistics(&st, "response time");
 
 	exit(0);
