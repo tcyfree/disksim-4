@@ -81,6 +81,7 @@ void
 add_statistics(Stat *s, double x)
 {
   s->n++;
+  printf("s->sum=%f x=%f\n", s->sum, x);
   s->sum += x;
   s->sqr += x*x;
 }
@@ -93,6 +94,7 @@ print_statistics(Stat *s, const char *title)
 
   avg = s->sum/s->n;
   std = sqrt((s->sqr - 2*avg*s->sum + s->n*avg*avg) / s->n);
+  printf("sum=%f n=%d\n", s->sum, s->n);
   printf("%s: n=%d average=%f std. deviation=%f\n", title, s->n, avg, std);
 }
 
@@ -187,7 +189,8 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Wrong number of arguments for I/O trace event type\n");
 			fprintf(stderr, "line: %s", line);
 		 }
-    printf("%lf %d %ld %d %d\n", time, devno, logical_block_number,size, isread);
+    // printf("%lf %d %ld %d %d\n", time, devno, logical_block_number,size, isread);
+    time = time / 1000000000; // 将ns改成s
 		struct disksim_request *r = malloc(sizeof(struct disksim_request));  // 这里需要特别注意，每个request都需要不同的内存
 		r->start = time;
 		r->flags = isread;
