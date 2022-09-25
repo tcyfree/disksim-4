@@ -81,7 +81,7 @@ void
 add_statistics(Stat *s, double x)
 {
   s->n++;
-  printf("s->sum=%f x=%f\n", s->sum, x);
+  // printf("s->sum=%f x=%f\n", s->sum, x);
   s->sum += x;
   s->sqr += x*x;
 }
@@ -94,18 +94,14 @@ print_statistics(Stat *s, const char *title)
 
   avg = s->sum/s->n;
   std = sqrt((s->sqr - 2*avg*s->sum + s->n*avg*avg) / s->n);
-  printf("sum=%f n=%d\n", s->sum, s->n);
+  // printf("sum=%f n=%d\n", s->sum, s->n);
   printf("%s: n=%d average=%f std. deviation=%f\n", title, s->n, avg, std);
 }
 
 void
-avg_statistics_pro(Stat *s, const char *title, int seq)
+avg_statistics_pro(Stat *s, const char *title)
 {
   double avg, std;
-  // if (seq == 0)
-  // {
-  //   s->sum += s->n*5;
-  // }
   avg = s->sum/s->n;
   std = sqrt((s->sqr - 2*avg*s->sum + s->n*avg*avg) / s->n);
   //改成纳秒，和ssdsim同步
@@ -208,7 +204,7 @@ int main(int argc, char *argv[])
 	}
 
 	disksim_interface_shutdown(disksim, now);
-
+  avg_statistics_pro(&st, "response time");
 	print_statistics(&st, "response time");
 
 	exit(0);
