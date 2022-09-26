@@ -116,7 +116,7 @@ avg_statistics(Stat *s, const char *title)
   avg = s->sum/s->n;
   std = sqrt((s->sqr - 2*avg*s->sum + s->n*avg*avg) / s->n);
   //改成纳秒，和ssdsim同步
-  printf("%d\n", (int)(avg * 1000000));
+  printf("%lld\n", avg * 1000000);
 }
 
 /*
